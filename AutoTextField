@@ -1,0 +1,88 @@
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import javax.swing.JTextField;
+import javax.swing.text.BadLocationException;
+public class AutoTextField {
+    
+        JTextField textField;
+        String[]vector;
+       
+        public AutoTextField(JTextField textField, String[]vector)
+        {
+            this.textField=textField;
+            this.textField.addKeyListener(new keyforString(this.textField, vector));
+            this.vector=vector;
+           
+        }
+
+        private class keyforString extends KeyAdapter
+        {
+            String[] data = new String[]{"-"};
+            JTextField textField;
+            public keyforString(JTextField txt, String[]data)
+            {
+                this.textField=txt;
+                this.data= data;
+                textField.addKeyListener(this);
+            }
+            public void keyReleased(KeyEvent e)
+            {
+                if (!(e.getKeyCode() >= 65 && e.getKeyCode() <= 90 || e.getKeyCode() >= 96 && e.getKeyCode() <= 105 || e.getKeyCode() == e.VK_ENTER))
+                    return;
+                if (textField.getText().isEmpty())
+                    return;
+                if (data.length==0)
+                    return;
+                addTextAndSelectToTextFieldToRest(textField, getTextFromVector(textField.getText(), data));
+            }
+        }
+
+
+    
+    public static void addTextAndSelectToTextFieldToRest(JTextField textField, String newData)
+    {
+        String SearchedItem="";
+        int Actual=textField.getText().length();
+        
+
+        SearchedItem = newData.substring(Actual, newData.length());
+        if (newData.isEmpty() || SearchedItem.isEmpty()) {
+            return;
+        }
+
+        try
+        {
+            textField.getDocument().insertString(textField.getCaretPosition(), SearchedItem, null);
+        } catch (BadLocationException ex) {
+            ex.printStackTrace();
+        }
+        textField.select(Actual, textField.getText().length());
+        
+    }
+    
+    public static String getTextFromVector(String dataSearch, String[]items)
+    {
+
+        int position = getPosition(dataSearch, items);
+        if (position==-1)
+            return dataSearch;
+        return items[position];
+    }
+    public static int getPosition(String dataS, String[]items)
+    {
+        try {
+            for (int i = 0; i < items.length; i++)
+                if (dataS.equals(items[i].substring(0, dataS.length())))
+                    return i;
+        } catch (Exception e) {
+            return -1;
+        }
+        return -1;
+    }
+}
+
+    
+
+
+    
+
