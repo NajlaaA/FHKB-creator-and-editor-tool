@@ -1,7 +1,9 @@
-/**
- *
- * @author najla
- */
+import javax.swing.ButtonModel;
+import javax.swing.DefaultListModel;
+import javax.swing.table.DefaultTableModel;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+
 public class EditIndividual extends javax.swing.JFrame {
 
     /**
