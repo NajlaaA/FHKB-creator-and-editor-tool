@@ -1,0 +1,3418 @@
+
+/**
+ *
+ * @author najla
+ */
+import org.netbeans.api.visual.graph.GraphScene;
+import java.util.*;
+import java.awt.Dimension;
+import javax.swing.*;
+import java.io.*;
+import java.awt.Point;
+//import java.awt
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+//import com.clarkparsia.pellet.owlapiv3.PelletReasoner;
+import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
+import com.clarkparsia.pellet.owlapiv3.PelletReasoner;
+import java.awt.BorderLayout;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+//import uk.ac.manchester.cs.jfact.JFactReasoner;
+import uk.ac.manchester.cs.jfact.JFactFactory;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import java.util.Collections;
+//import java.net.URI;
+import org.semanticweb.HermiT.Reasoner.ReasonerFactory;
+import org.semanticweb.owlapi.reasoner.Node;
+import org.semanticweb.owlapi.reasoner.NodeSet;
+
+import java.awt.event.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.paint.Color;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
+import org.mindswap.pellet.exceptions.PelletRuntimeException;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.general.IconNodeWidget;
+import org.openide.util.Exceptions;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+
+//import javax.swing.text.BadLocationException;
+import org.semanticweb.owlapi.util.OWLEntityRemover;
+import org.semanticweb.owlapi.util.OWLEntityRenamer;
+
+
+
+public class LoadOntology extends javax.swing.JFrame  implements ActionListener{
+
+  
+
+   OWLOntology ont;
+   OWLOntologyManager manager;
+   OWLDataFactory df = OWLManager.getOWLDataFactory();
+   
+   int reasonerID=0;
+   OWLReasoner reasoner;
+  
+   
+ 
+   OWLClass Person= df.getOWLClass(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#Person"));
+   OWLClass Man= df.getOWLClass(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#Man"));
+   OWLClass Woman= df.getOWLClass(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#Woman"));
+   OWLClass Marriage= df.getOWLClass(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#Marriage"));
+   
+   OWLObjectProperty hasFather= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasFather"));
+   OWLObjectProperty hasMother= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasMother"));
+   OWLObjectProperty hasMalePartner= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasMalePartner"));
+   OWLObjectProperty hasFemalePartner= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasFemalePartner"));
+   OWLObjectProperty hasPartner= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasPartner"));
+   OWLObjectProperty hasParent= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasParent"));
+   OWLObjectProperty hasChild= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasChild"));
+   OWLObjectProperty hasAncestor= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasAncestor"));
+   OWLObjectProperty hasSpouse= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasSpouse"));
+   OWLObjectProperty hasWife= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasWife"));
+   OWLObjectProperty hasHusband= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasHusband"));
+   OWLObjectProperty hasDaughter= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasDaughter"));
+   OWLObjectProperty hasSon= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasSon"));
+   OWLObjectProperty hasBrother= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasBrother"));
+   OWLObjectProperty hasSister= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasSister"));
+   OWLObjectProperty hasUncle= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasUncle"));
+   OWLObjectProperty hasGrandParent= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasGrandParent"));
+   OWLObjectProperty hasGrandmother= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasGrandmother"));
+   OWLObjectProperty hasGrandfather= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasGrandfather"));
+   OWLObjectProperty isAncestorOf= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#isAncestorOf"));
+   OWLObjectProperty hasAunt= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasAunt"));
+   OWLObjectProperty isSiblingOf= df.getOWLObjectProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#isSiblingOf"));
+   
+   
+   OWLDataProperty hasBirthYear= df.getOWLDataProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasBirthYear"));
+   OWLDataProperty hasDeathYear= df.getOWLDataProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasDeathYear"));
+   OWLDataProperty hasFirstName= df.getOWLDataProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasFirstGivenName"));
+   OWLDataProperty hasFamilyName= df.getOWLDataProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasFamilyName"));
+   OWLDataProperty hasMarriageYear= df.getOWLDataProperty(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#hasMarriageYear"));
+   
+   DefaultListModel model= new DefaultListModel();
+   DefaultListModel marriageModel= new DefaultListModel();
+   DefaultTableModel tmodel;
+   
+   
+   
+   String[] firstNames =new String[1000];
+   String[] lastNames =new String[1000];
+   String[] birthYears =new String[1000];
+   String[] deathYears =new String[1000];
+   String[] marriageLabels= new String[1000];
+   int queryCount=1;
+   int personOrder=0, manOrder=0, womanOrder=0, hasParentOrder=0, hasMotherOrder=0, hasFatherOrder=0;
+   int ancestorOrder=0, grandParentOrder=0, grandMotherOrder=0, grandFatherOrder=0, decendantOrder=0;
+   int hasBrotherOrder=0, hasSisterOrder=0, hasSiblingOrder=0, sonOrder=0, daughterOrder=0;
+   
+   int count=0;
+   FamilyTree tree;
+   int position1=1;
+  
+   
+   
+    
+    public LoadOntology() {
+       
+        tree=new FamilyTree();
+        
+        initComponents();
+        
+         
+        }   
+        
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        buttonGroup2 = new javax.swing.ButtonGroup();
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup3 = new javax.swing.ButtonGroup();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel2 = new javax.swing.JPanel();
+        Adding = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        fName = new javax.swing.JTextField();
+        birth = new javax.swing.JTextField();
+        death = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        LName = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        maleButton = new javax.swing.JRadioButton();
+        femaleButton = new javax.swing.JRadioButton();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        fatherBirth = new javax.swing.JTextField();
+        fatherName = new javax.swing.JTextField();
+        fatherLast = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        fatherDeath = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
+        fComboBox = new javax.swing.JComboBox();
+        jLabel24 = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        motherDeath = new javax.swing.JTextField();
+        motherName = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        motherBirth = new javax.swing.JTextField();
+        motherLast = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        mComboBox = new javax.swing.JComboBox();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        list1 = new javax.swing.JList();
+        editButton = new javax.swing.JButton();
+        BaddFather = new javax.swing.JButton();
+        addMotherB = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        jLabel22 = new javax.swing.JLabel();
+        searchTF = new javax.swing.JTextField();
+        jPanel10 = new javax.swing.JPanel();
+        jLabel15 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
+        spouseBirth = new javax.swing.JTextField();
+        spouseLast = new javax.swing.JTextField();
+        spouseFirst = new javax.swing.JTextField();
+        spouseDeath = new javax.swing.JTextField();
+        jLabel19 = new javax.swing.JLabel();
+        spouseM = new javax.swing.JRadioButton();
+        jLabel20 = new javax.swing.JLabel();
+        marriageYear = new javax.swing.JTextField();
+        spouseF = new javax.swing.JRadioButton();
+        jPanel11 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        list2 = new javax.swing.JList();
+        editMarriage = new javax.swing.JButton();
+        deleteMarriage = new javax.swing.JButton();
+        jPanel6 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        execute = new javax.swing.JButton();
+        jPanel8 = new javax.swing.JPanel();
+        fatherOfQ = new javax.swing.JRadioButton();
+        motherOfQ = new javax.swing.JRadioButton();
+        ancestorsQ = new javax.swing.JRadioButton();
+        parentsOfQ = new javax.swing.JRadioButton();
+        jLabel14 = new javax.swing.JLabel();
+        jTextField2 = new javax.swing.JTextField();
+        childQ = new javax.swing.JRadioButton();
+        husbandQ = new javax.swing.JRadioButton();
+        wifeQ = new javax.swing.JRadioButton();
+        spouseQ = new javax.swing.JRadioButton();
+        sonQ = new javax.swing.JRadioButton();
+        daughterQ = new javax.swing.JRadioButton();
+        brotherOfQ = new javax.swing.JRadioButton();
+        sisterOfQ = new javax.swing.JRadioButton();
+        grandmotherQ = new javax.swing.JRadioButton();
+        grandfatherQ = new javax.swing.JRadioButton();
+        GrandparentQ = new javax.swing.JRadioButton();
+        uncleQ = new javax.swing.JRadioButton();
+        auntQ = new javax.swing.JRadioButton();
+        descendantsQ = new javax.swing.JRadioButton();
+        siblingQ = new javax.swing.JRadioButton();
+        jPanel9 = new javax.swing.JPanel();
+        personQ = new javax.swing.JRadioButton();
+        manQ = new javax.swing.JRadioButton();
+        womanQ = new javax.swing.JRadioButton();
+        jPanel12 = new javax.swing.JPanel();
+        jPanel13 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jPanel14 = new javax.swing.JPanel();
+        jLabel21 = new javax.swing.JLabel();
+        personLabel = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        menLabel = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        womenLabel = new javax.swing.JLabel();
+        jLabel27 = new javax.swing.JLabel();
+        jLabel28 = new javax.swing.JLabel();
+        jLabel29 = new javax.swing.JLabel();
+        fatherLabel = new javax.swing.JLabel();
+        motherLabel = new javax.swing.JLabel();
+        sonLabel = new javax.swing.JLabel();
+        jLabel33 = new javax.swing.JLabel();
+        jLabel34 = new javax.swing.JLabel();
+        jLabel35 = new javax.swing.JLabel();
+        daughterLabel = new javax.swing.JLabel();
+        gmLabel = new javax.swing.JLabel();
+        gfLabel = new javax.swing.JLabel();
+        jLabel39 = new javax.swing.JLabel();
+        uncleLabel = new javax.swing.JLabel();
+        jLabel41 = new javax.swing.JLabel();
+        auntLabel = new javax.swing.JLabel();
+        marriageLabel = new javax.swing.JLabel();
+        jLabel47 = new javax.swing.JLabel();
+        treePanel = new javax.swing.JPanel();
+        scrollPane = new javax.swing.JScrollPane();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        fNew = new javax.swing.JMenuItem();
+        fSave = new javax.swing.JMenuItem();
+        fSaveAs = new javax.swing.JMenuItem();
+        fExit = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        jMenuItem11 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem12 = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        factPlus = new javax.swing.JRadioButtonMenuItem();
+        hermit = new javax.swing.JRadioButtonMenuItem();
+        pellet = new javax.swing.JRadioButtonMenuItem();
+        jMenu4 = new javax.swing.JMenu();
+        jMenuItem15 = new javax.swing.JMenuItem();
+        jMenuItem13 = new javax.swing.JMenuItem();
+        jMenuItem14 = new javax.swing.JMenuItem();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("FHKB Creator and Editor");
+
+        jTabbedPane1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Add individuals"));
+
+        Adding.setText("Add");
+        Adding.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AddingActionPerformed(evt);
+            }
+        });
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Individual:"));
+
+        jLabel2.setText("First Name");
+
+        jLabel3.setText("Last Name");
+
+        jLabel4.setText("Year of Birth");
+
+        jLabel5.setText("Year of Death");
+
+        jLabel6.setText("Gender");
+
+        buttonGroup1.add(maleButton);
+        maleButton.setText("Male");
+
+        buttonGroup1.add(femaleButton);
+        femaleButton.setText("Female");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(1, 1, 1)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(birth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(death, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(maleButton))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(fName, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addGap(18, 18, 18)
+                        .addComponent(LName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel6)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(femaleButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel3Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {LName, birth, death, fName});
+
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(fName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3)
+                    .addComponent(LName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addGap(12, 12, 12)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(birth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(death, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(maleButton)
+                    .addComponent(femaleButton))
+                .addContainerGap())
+        );
+
+        jPanel3Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {LName, birth, death, fName});
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Individual's Father:"));
+
+        jLabel8.setText("Year of Birth");
+
+        jLabel1.setText(" Last Name");
+
+        jLabel9.setText("Year of Death");
+
+        jLabel13.setText("First Name");
+
+        jLabel24.setText("Or select from:");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fatherName, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fatherLast))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addGap(66, 66, 66)
+                                .addComponent(fatherBirth)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fatherDeath, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(65, Short.MAX_VALUE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(fComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
+        );
+
+        jPanel4Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {fatherBirth, fatherLast, fatherName});
+
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(fatherName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1)
+                    .addComponent(fatherLast, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel24))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(fatherBirth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9)
+                    .addComponent(fatherDeath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(16, Short.MAX_VALUE))
+        );
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Individual's Mother:"));
+
+        jLabel7.setText("First  Name");
+
+        jLabel11.setText("Year of Birth");
+
+        jLabel12.setText("Year of Death");
+
+        jLabel10.setText("Last Name");
+
+        jLabel26.setText("Or select from:");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(motherName, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(motherBirth, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel12)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(motherDeath, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(mComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(jLabel10)
+                        .addGap(18, 18, 18)
+                        .addComponent(motherLast, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel26)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+
+        jPanel5Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {motherBirth, motherDeath, motherLast, motherName});
+
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(motherName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10)
+                    .addComponent(motherLast, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel26))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(motherBirth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel12)
+                    .addComponent(motherDeath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Individuals List"));
+
+        jScrollPane1.setViewportView(list1);
+
+        editButton.setText("Edit");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
+        BaddFather.setText("Add/Edit father");
+        BaddFather.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BaddFatherActionPerformed(evt);
+            }
+        });
+
+        addMotherB.setText("Add/Edit mother");
+        addMotherB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addMotherBActionPerformed(evt);
+            }
+        });
+
+        deleteButton.setText("Delete");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel22.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\mid search.png")); // NOI18N
+
+        searchTF.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                searchTFKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                searchTFKeyTyped(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel22)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(searchTF))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(editButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(BaddFather, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(addMotherB, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addContainerGap())
+        );
+
+        jPanel1Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {BaddFather, addMotherB, deleteButton, editButton});
+
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editButton)
+                    .addComponent(BaddFather))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(deleteButton)
+                    .addComponent(addMotherB)))
+        );
+
+        jPanel1Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {BaddFather, addMotherB, deleteButton, editButton});
+
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder("Individual's Partner"));
+
+        jLabel15.setText("First Name");
+
+        jLabel16.setText("Year of Birth");
+
+        jLabel17.setText("Last Name");
+
+        jLabel18.setText("Year of Death");
+
+        jLabel19.setText("Gender");
+
+        buttonGroup2.add(spouseM);
+        spouseM.setText("Male");
+
+        jLabel20.setText("Year of marriage");
+
+        buttonGroup2.add(spouseF);
+        spouseF.setText("Female");
+
+        javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel16)
+                        .addComponent(jLabel15))
+                    .addComponent(jLabel20))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(spouseBirth, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(marriageYear, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(spouseFirst, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(42, 42, 42)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel10Layout.createSequentialGroup()
+                        .addComponent(jLabel19)
+                        .addGap(18, 18, 18)
+                        .addComponent(spouseM)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(spouseF))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
+                        .addComponent(jLabel17)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(spouseLast, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
+                        .addComponent(jLabel18)
+                        .addGap(18, 18, 18)
+                        .addComponent(spouseDeath, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(105, Short.MAX_VALUE))
+        );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel15)
+                    .addGroup(jPanel10Layout.createSequentialGroup()
+                        .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(spouseFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel17)
+                            .addComponent(spouseLast, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(spouseBirth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel16)
+                            .addComponent(jLabel18)
+                            .addComponent(spouseDeath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel19)
+                    .addComponent(spouseM)
+                    .addComponent(jLabel20)
+                    .addComponent(marriageYear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(spouseF))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel10Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {spouseBirth, spouseDeath, spouseFirst, spouseLast});
+
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("Marriage Relationships list:"));
+
+        jScrollPane3.setViewportView(list2);
+
+        editMarriage.setText("Edit");
+        editMarriage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editMarriageActionPerformed(evt);
+            }
+        });
+
+        deleteMarriage.setText("Delete");
+        deleteMarriage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteMarriageActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
+        jPanel11.setLayout(jPanel11Layout);
+        jPanel11Layout.setHorizontalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel11Layout.createSequentialGroup()
+                        .addComponent(jScrollPane3)
+                        .addContainerGap())
+                    .addGroup(jPanel11Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(editMarriage, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(39, 39, 39)
+                        .addComponent(deleteMarriage, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(24, 24, 24))))
+        );
+        jPanel11Layout.setVerticalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editMarriage)
+                    .addComponent(deleteMarriage)))
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(Adding, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(13, 13, 13))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Adding))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Adding", jPanel2);
+
+        jPanel7.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane2.setViewportView(jTextArea1);
+
+        execute.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        execute.setText("Execute");
+        execute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                executeActionPerformed(evt);
+            }
+        });
+
+        jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Query for specific individual", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        fatherOfQ.setText("Father ");
+        fatherOfQ.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                fatherOfQMouseClicked(evt);
+            }
+        });
+
+        motherOfQ.setText("Mother ");
+        motherOfQ.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                motherOfQMouseClicked(evt);
+            }
+        });
+
+        ancestorsQ.setText("Ancestors ");
+
+        parentsOfQ.setText("Parent ");
+        parentsOfQ.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                parentsOfQMouseClicked(evt);
+            }
+        });
+
+        jLabel14.setFont(new java.awt.Font("Times New Roman", 1, 12)); // NOI18N
+        jLabel14.setForeground(new java.awt.Color(0, 0, 204));
+        jLabel14.setText("Individual Label: ( i.e.  FirstName_LastName_BirthYear)");
+
+        childQ.setText("Children ");
+
+        husbandQ.setText("Husband ");
+
+        wifeQ.setText("Wife ");
+
+        spouseQ.setText("Spouse ");
+
+        sonQ.setText("Son ");
+
+        daughterQ.setText("Daughter ");
+
+        brotherOfQ.setText("Brother ");
+        brotherOfQ.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                brotherOfQMouseClicked(evt);
+            }
+        });
+
+        sisterOfQ.setText("Sister ");
+        sisterOfQ.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                sisterOfQMouseClicked(evt);
+            }
+        });
+
+        grandmotherQ.setText("Grandmother");
+
+        grandfatherQ.setText("Grandfather ");
+
+        GrandparentQ.setText("Grandparent ");
+
+        uncleQ.setText("Uncle ");
+
+        auntQ.setText("Aunt ");
+
+        descendantsQ.setText("Descendants");
+
+        siblingQ.setText("Sibling ");
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(177, 177, 177))
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fatherOfQ)
+                            .addComponent(motherOfQ)
+                            .addComponent(ancestorsQ)
+                            .addComponent(parentsOfQ))
+                        .addGap(27, 27, 27)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(grandmotherQ)
+                            .addComponent(GrandparentQ)
+                            .addComponent(grandfatherQ)
+                            .addComponent(descendantsQ))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(daughterQ)
+                            .addComponent(sonQ)
+                            .addComponent(childQ)
+                            .addComponent(brotherOfQ))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(sisterOfQ)
+                            .addComponent(auntQ)
+                            .addComponent(uncleQ)
+                            .addComponent(siblingQ))
+                        .addGap(29, 29, 29)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(wifeQ)
+                            .addComponent(husbandQ)
+                            .addComponent(spouseQ))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel14)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ancestorsQ)
+                    .addComponent(GrandparentQ)
+                    .addComponent(childQ)
+                    .addComponent(sisterOfQ)
+                    .addComponent(spouseQ))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(grandmotherQ)
+                    .addComponent(parentsOfQ)
+                    .addComponent(sonQ)
+                    .addComponent(wifeQ)
+                    .addComponent(siblingQ))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(grandfatherQ)
+                    .addComponent(fatherOfQ)
+                    .addComponent(daughterQ)
+                    .addComponent(husbandQ)
+                    .addComponent(auntQ))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(motherOfQ)
+                    .addComponent(descendantsQ)
+                    .addComponent(brotherOfQ)
+                    .addComponent(uncleQ))
+                .addContainerGap(25, Short.MAX_VALUE))
+        );
+
+        jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "General query", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        personQ.setText("Person");
+        personQ.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                personQMouseClicked(evt);
+            }
+        });
+
+        manQ.setText("Man");
+
+        womanQ.setText("Woman");
+
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(manQ)
+                    .addComponent(womanQ)
+                    .addComponent(personQ))
+                .addContainerGap(618, Short.MAX_VALUE))
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addComponent(personQ)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(manQ)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(womanQ)
+                .addGap(0, 17, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(execute, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(713, 713, 713))
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 697, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(execute, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(30, Short.MAX_VALUE))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("DL Query", jPanel6);
+
+        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Individuals table"));
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Individual name", "Individual birth year", "Individual death year", "Individual father", "Individual mother"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
+        jScrollPane4.setViewportView(jTable1);
+
+        javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
+        jPanel13.setLayout(jPanel13Layout);
+        jPanel13Layout.setHorizontalGroup(
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 674, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel13Layout.setVerticalGroup(
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder("Statistics"));
+
+        jLabel21.setText("Number of persons:");
+
+        personLabel.setText("0");
+
+        jLabel23.setText("Number of men:");
+
+        menLabel.setText("0");
+
+        jLabel25.setText("Number of women:");
+
+        womenLabel.setText("0");
+
+        jLabel27.setText("Number of hasFather:");
+
+        jLabel28.setText("Number of hasMother:");
+
+        jLabel29.setText("Number of hasSons:");
+
+        fatherLabel.setText("0");
+
+        motherLabel.setText("0");
+
+        sonLabel.setText("0");
+
+        jLabel33.setText("Number of hasGrandmother:");
+
+        jLabel34.setText("Number of hasGrandfather:");
+
+        jLabel35.setText("Number of hasUncles:");
+
+        daughterLabel.setText("0");
+
+        gmLabel.setText("0");
+
+        gfLabel.setText("0");
+
+        jLabel39.setText("Number of hasAunts:");
+
+        uncleLabel.setText("0");
+
+        jLabel41.setText("Number of Merriage relations:");
+
+        auntLabel.setText("0");
+
+        marriageLabel.setText("0");
+
+        jLabel47.setText("Number of hasDaughters:");
+
+        javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+        jPanel14.setLayout(jPanel14Layout);
+        jPanel14Layout.setHorizontalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addComponent(jLabel28)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(motherLabel))
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addComponent(jLabel29)
+                        .addGap(18, 18, 18)
+                        .addComponent(sonLabel))
+                    .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel14Layout.createSequentialGroup()
+                            .addComponent(jLabel21)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(personLabel))
+                        .addGroup(jPanel14Layout.createSequentialGroup()
+                            .addComponent(jLabel23)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(menLabel))
+                        .addGroup(jPanel14Layout.createSequentialGroup()
+                            .addComponent(jLabel25)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(womenLabel))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel14Layout.createSequentialGroup()
+                            .addComponent(jLabel27)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(fatherLabel))))
+                .addGap(11, 11, 11)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addGap(49, 49, 49)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                                .addComponent(jLabel35)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(uncleLabel))
+                            .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel14Layout.createSequentialGroup()
+                                    .addComponent(jLabel34)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(gfLabel))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(jPanel14Layout.createSequentialGroup()
+                                        .addComponent(jLabel33)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(gmLabel))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel14Layout.createSequentialGroup()
+                                        .addGap(71, 71, 71)
+                                        .addComponent(jLabel47)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(daughterLabel))))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                        .addComponent(jLabel41)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(marriageLabel))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                        .addComponent(jLabel39)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(auntLabel)))
+                .addContainerGap(246, Short.MAX_VALUE))
+        );
+        jPanel14Layout.setVerticalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel21)
+                    .addComponent(personLabel)
+                    .addComponent(daughterLabel)
+                    .addComponent(jLabel47))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel23)
+                    .addComponent(menLabel)
+                    .addComponent(gmLabel)
+                    .addComponent(jLabel33))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel25)
+                    .addComponent(womenLabel)
+                    .addComponent(gfLabel)
+                    .addComponent(jLabel34))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel27)
+                    .addComponent(fatherLabel)
+                    .addComponent(uncleLabel)
+                    .addComponent(jLabel35))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel28)
+                    .addComponent(motherLabel)
+                    .addComponent(auntLabel)
+                    .addComponent(jLabel39))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(sonLabel)
+                    .addComponent(marriageLabel)
+                    .addComponent(jLabel41))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
+        jPanel12.setLayout(jPanel12Layout);
+        jPanel12Layout.setHorizontalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel12Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(138, Short.MAX_VALUE))
+        );
+        jPanel12Layout.setVerticalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel12Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(33, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Information", jPanel12);
+
+        javax.swing.GroupLayout treePanelLayout = new javax.swing.GroupLayout(treePanel);
+        treePanel.setLayout(treePanelLayout);
+        treePanelLayout.setHorizontalGroup(
+            treePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, treePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 834, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        treePanelLayout.setVerticalGroup(
+            treePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Family tree", treePanel);
+
+        jMenu1.setText("File");
+
+        fNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        fNew.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\png\\16x16\\new_page.png")); // NOI18N
+        fNew.setText("New");
+        fNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fNewActionPerformed(evt);
+            }
+        });
+        jMenu1.add(fNew);
+
+        fSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        fSave.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\png\\16x16\\save.png")); // NOI18N
+        fSave.setText("Save");
+        fSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fSaveActionPerformed(evt);
+            }
+        });
+        jMenu1.add(fSave);
+
+        fSaveAs.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\Actions-document-save-all-icon.png")); // NOI18N
+        fSaveAs.setText("Save as");
+        fSaveAs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fSaveAsActionPerformed(evt);
+            }
+        });
+        jMenu1.add(fSaveAs);
+
+        fExit.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\Users-Exit-icon.png")); // NOI18N
+        fExit.setText("Exit");
+        fExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fExitActionPerformed(evt);
+            }
+        });
+        jMenu1.add(fExit);
+
+        jMenuBar1.add(jMenu1);
+
+        jMenu3.setText("Reasoner");
+
+        jMenuItem11.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\Play-Normal-icon.png")); // NOI18N
+        jMenuItem11.setText("Start reasoner");
+        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem11ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem11);
+
+        jMenuItem1.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\Synchronize.png")); // NOI18N
+        jMenuItem1.setText("Synchronize reasoner");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem1);
+
+        jMenuItem12.setIcon(new javax.swing.ImageIcon("C:\\Users\\najla\\Desktop\\Icons\\Stop-Normal-Blue-icon.png")); // NOI18N
+        jMenuItem12.setText("Stop reasoner");
+        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem12ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem12);
+        jMenu3.add(jSeparator1);
+
+        buttonGroup3.add(factPlus);
+        factPlus.setSelected(true);
+        factPlus.setText("FaCT++");
+        factPlus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                factPlusActionPerformed(evt);
+            }
+        });
+        jMenu3.add(factPlus);
+
+        buttonGroup3.add(hermit);
+        hermit.setText("HermiT 1.3.8");
+        hermit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hermitActionPerformed(evt);
+            }
+        });
+        jMenu3.add(hermit);
+
+        buttonGroup3.add(pellet);
+        pellet.setText("Pellet");
+        pellet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pelletActionPerformed(evt);
+            }
+        });
+        jMenu3.add(pellet);
+
+        jMenuBar1.add(jMenu3);
+
+        jMenu4.setText("View");
+
+        jMenuItem15.setText("Query view");
+        jMenuItem15.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem15ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItem15);
+
+        jMenuItem13.setText("Individual's information view");
+        jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem13ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItem13);
+
+        jMenuItem14.setText("Family tree view");
+        jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem14ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItem14);
+
+        jMenuBar1.add(jMenu4);
+
+        setJMenuBar(jMenuBar1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jTabbedPane1))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jTabbedPane1))
+        );
+
+        pack();
+    }// </editor-fold>                        
+
+    private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+       reasoner.dispose();
+    }                                           
+
+    private void hermitActionPerformed(java.awt.event.ActionEvent evt) {                                       
+       
+         reasonerID=1;
+         ReasonerFactory rf = new ReasonerFactory();
+         reasoner=rf.createReasoner(ont);
+        
+        System.out.println(reasoner.isConsistent());
+        Numbers();
+    }                                      
+
+    private void factPlusActionPerformed(java.awt.event.ActionEvent evt) {                                         
+       JFactFactory factory = new JFactFactory();
+       reasoner = factory.createReasoner(ont);
+       reasonerID=1;
+       System.out.println(reasoner.isConsistent());
+       Numbers();
+    }                                        
+
+    private void AddingActionPerformed(java.awt.event.ActionEvent evt) {                                       
+       
+       String label1,fath,moth, spouseLabel, marriageLabel;
+        label1=fName.getText()+"_"+LName.getText()+"_"+birth.getText();
+        fath=fatherName.getText()+"_"+fatherLast.getText()+"_"+fatherBirth.getText();
+        moth= motherName.getText()+"_"+motherLast.getText()+"_"+motherBirth.getText();
+        tmodel= (DefaultTableModel)jTable1.getModel();  
+       
+        //create the tree
+        scrollPane.setViewportView(tree.createView());
+        
+        Widget w1=null,w2=null,w3=null,w4=null;
+        int p1=position1+scrollPane.getWidth()/2;
+        int p2=position1+scrollPane.getHeight()/2;
+        position1+=50;
+        System.out.println("p1:"+p1);
+        System.out.println("p2:"+p2);
+        
+          //Adding individual data
+          OWLIndividual matt = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+label1));
+          OWLClassAssertionAxiom ca1;
+          if(maleButton.isSelected())
+               ca1 = df.getOWLClassAssertionAxiom(Man, matt);
+          else if(femaleButton.isSelected())
+               ca1 = df.getOWLClassAssertionAxiom(Woman, matt);
+          else
+             ca1 = df.getOWLClassAssertionAxiom(Person, matt);
+        
+          manager.addAxiom(ont, ca1);
+       
+        if(!(model.contains(label1)) )
+        {  
+          model.addElement(label1);
+          
+          //Creating String arrays for AutoComplete textfields
+          firstNames[count]= fName.getText();
+          lastNames[count]= LName.getText();
+          birthYears[count]= birth.getText();
+          if(!death.getText().isEmpty())
+          {
+              deathYears[count]=death.getText();
+              new AutoTextField(death, deathYears);
+          }
+          count++;
+          new AutoTextField(fName, firstNames);
+          new AutoTextField(LName, lastNames);
+          new AutoTextField(birth, birthYears);
+                 
+          OWLAxiom asser1= df.getOWLDataPropertyAssertionAxiom(hasFirstName, matt, fName.getText());
+          manager.addAxiom(ont,asser1);
+          OWLAxiom asser2= df.getOWLDataPropertyAssertionAxiom(hasFamilyName, matt, LName.getText());
+          manager.addAxiom(ont,asser2);
+          OWLAxiom asser3= df.getOWLDataPropertyAssertionAxiom(hasBirthYear, matt, Integer.parseInt(birth.getText()));
+          manager.addAxiom(ont,asser3);
+          if(!death.getText().isEmpty()) 
+            { OWLAxiom asser4= df.getOWLDataPropertyAssertionAxiom(hasDeathYear, matt, Integer.parseInt(death.getText()));
+              manager.addAxiom(ont,asser4); 
+            }
+          w1=tree.addWidget(label1,p1, p2);
+         
+        }
+        else
+            JOptionPane.showMessageDialog(new JFrame(), "The individual is already exist", "Dialog",
+        JOptionPane.INFORMATION_MESSAGE);
+        
+        
+        //Adding spouse data
+            if(!spouseFirst.getText().isEmpty())
+            {
+              spouseLabel=spouseFirst.getText()+"_"+spouseLast.getText()+"_"+spouseBirth.getText();
+              marriageLabel= "MarriageOf_"+ fName.getText()+"_and_"+ spouseFirst.getText();
+              OWLIndividual spouse = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+spouseLabel));
+              OWLIndividual marriageInd= df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+marriageLabel));
+              OWLClassAssertionAxiom ca3 = df.getOWLClassAssertionAxiom(Marriage, marriageInd);
+                manager.addAxiom(ont, ca3);
+              
+              if(spouseM.isSelected())
+              {
+                OWLClassAssertionAxiom ca2 = df.getOWLClassAssertionAxiom(Man, spouse);
+                manager.addAxiom(ont, ca2);
+                OWLAxiom assertion1 = df.getOWLObjectPropertyAssertionAxiom(hasMalePartner, marriageInd, spouse);
+                manager.addAxiom(ont, assertion1);
+                OWLAxiom assertion2 = df.getOWLObjectPropertyAssertionAxiom(hasFemalePartner, marriageInd, matt);
+                manager.addAxiom(ont, assertion2);
+              }
+              else if(spouseF.isSelected())
+              {
+                OWLClassAssertionAxiom ca2= df.getOWLClassAssertionAxiom(Woman, spouse);
+                manager.addAxiom(ont, ca2);
+                OWLAxiom assertion1 = df.getOWLObjectPropertyAssertionAxiom(hasFemalePartner, marriageInd, spouse);
+                manager.addAxiom(ont, assertion1);
+                OWLAxiom assertion2 = df.getOWLObjectPropertyAssertionAxiom(hasMalePartner, marriageInd, matt);
+                manager.addAxiom(ont, assertion2);
+              }
+             else
+              {
+                 OWLClassAssertionAxiom ca2 = df.getOWLClassAssertionAxiom(Person, spouse);
+                 manager.addAxiom(ont, ca2);
+                OWLAxiom assertion1 = df.getOWLObjectPropertyAssertionAxiom(hasPartner, marriageInd, spouse);
+                manager.addAxiom(ont, assertion1);
+                OWLAxiom assertion2 = df.getOWLObjectPropertyAssertionAxiom(hasPartner, marriageInd, matt);
+                manager.addAxiom(ont, assertion2);
+              }
+        OWLAxiom assertion3 = df.getOWLDataPropertyAssertionAxiom(hasMarriageYear, marriageInd, Integer.parseInt(marriageYear.getText()));
+        manager.addAxiom(ont, assertion3);
+        
+        marriageModel.addElement(marriageLabel);
+        list2.setModel(marriageModel);
+        //marriageLabels[Mcount]= marriageLabel;
+       
+        if(!(model.contains(spouseLabel)) )
+        {   
+          model.addElement(spouseLabel);
+          
+          //Creating String arrays for AutoComplete textfields
+          firstNames[count]= spouseFirst.getText();
+          lastNames[count]= spouseLast.getText();
+          birthYears[count]= spouseBirth.getText();
+          if(!spouseDeath.getText().isEmpty())
+          {
+              deathYears[count]=spouseDeath.getText();
+              new AutoTextField(spouseDeath, deathYears);
+          }
+          count++;
+          new AutoTextField(spouseFirst, firstNames);
+          new AutoTextField(spouseLast, lastNames);
+          new AutoTextField(spouseBirth, birthYears);
+          //Family tree
+          w2=tree.addWidget(spouseLabel, p1-200, p2);
+          //Individuals table
+          if(!spouseDeath.getText().isEmpty())
+              tmodel.addRow(new Object[]{spouseFirst.getText()+" "+spouseLast.getText(),spouseBirth.getText(),spouseDeath.getText()," ", " "});
+            else
+              tmodel.addRow(new Object[]{spouseFirst.getText()+" "+spouseLast.getText(),spouseBirth.getText()," "," ", " "});
+        }
+        
+          OWLAxiom asser5= df.getOWLDataPropertyAssertionAxiom(hasFirstName, spouse, spouseFirst.getText());
+          manager.addAxiom(ont,asser5);
+          OWLAxiom asser6= df.getOWLDataPropertyAssertionAxiom(hasFamilyName, spouse, spouseLast.getText());
+          manager.addAxiom(ont,asser6);
+          OWLAxiom asser7= df.getOWLDataPropertyAssertionAxiom(hasBirthYear, spouse, Integer.parseInt(spouseBirth.getText()));
+          manager.addAxiom(ont,asser7);
+          if(!spouseDeath.getText().isEmpty())
+          {
+             OWLAxiom asser8= df.getOWLDataPropertyAssertionAxiom(hasDeathYear, spouse, Integer.parseInt(spouseDeath.getText()));
+             manager.addAxiom(ont,asser8); 
+          }
+        
+         }
+        
+
+        //Ading individual's father data
+        String fFirst="", fLast="";
+        if(!fatherName.getText().isEmpty()){
+            
+            if(!(model.contains(fath))){
+            model.addElement(fath);
+            
+            //Creating String arrays for AutoComplete textfields
+            firstNames[count]= fatherName.getText();
+            lastNames[count]= fatherLast.getText();
+            birthYears[count]= fatherBirth.getText();
+            if(!fatherDeath.getText().isEmpty())
+            {
+              deathYears[count]= fatherDeath.getText();
+              new AutoTextField(fatherDeath, deathYears);
+            }
+            count++;
+            new AutoTextField(fatherName, firstNames);
+            new AutoTextField(fatherLast, lastNames);
+            new AutoTextField(fatherBirth, birthYears);
+            //Adding the father to the tabel and family tree
+            if(!fatherDeath.getText().isEmpty())
+              tmodel.addRow(new Object[]{fatherName.getText()+" "+fatherLast.getText(),fatherBirth.getText(),fatherDeath.getText()," ", " "});
+            else
+              tmodel.addRow(new Object[]{fatherName.getText()+" "+fatherLast.getText(),fatherBirth.getText()," "," ", " "});
+            w3=tree.addWidget(fath,p1+100, p2-100);
+            tree.connect(w3, w1);
+            
+            }
+            else
+            {
+                Widget widget =tree.findWidget(fath);
+                if (widget != null) {
+                   tree.connect(widget, w1); 
+                }
+            }
+          
+            OWLIndividual father = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+fath));
+            OWLClassAssertionAxiom classAssertion2 = df.getOWLClassAssertionAxiom(Man, father);
+            manager.addAxiom(ont, classAssertion2);
+            
+
+            OWLAxiom assertion4 = df.getOWLObjectPropertyAssertionAxiom(hasFather, matt, father);
+            manager.addAxiom(ont, assertion4);
+            
+            if(maleButton.isSelected())
+            {
+              OWLAxiom assertion5 = df.getOWLObjectPropertyAssertionAxiom(hasSon, father, matt);
+              manager.addAxiom(ont, assertion5);}
+            else if(femaleButton.isSelected())
+            { OWLAxiom assertion6 = df.getOWLObjectPropertyAssertionAxiom(hasDaughter, father, matt);
+              manager.addAxiom(ont, assertion6);}
+            else
+            {
+              OWLAxiom assertion7 = df.getOWLObjectPropertyAssertionAxiom(hasChild, father, matt);
+              manager.addAxiom(ont, assertion7);  
+            }
+            
+            OWLAxiom asser9= df.getOWLDataPropertyAssertionAxiom(hasFirstName, father, fatherName.getText());
+            manager.addAxiom(ont,asser9);
+            OWLAxiom asser10= df.getOWLDataPropertyAssertionAxiom(hasFamilyName, father, fatherLast.getText());
+            manager.addAxiom(ont,asser10);
+            OWLAxiom asser11= df.getOWLDataPropertyAssertionAxiom(hasBirthYear, father, Integer.parseInt(fatherBirth.getText()));
+            manager.addAxiom(ont,asser11);
+            if(!fatherDeath.getText().isEmpty())
+            {
+              OWLAxiom asser12= df.getOWLDataPropertyAssertionAxiom(hasDeathYear, father, Integer.parseInt(fatherDeath.getText()));
+              manager.addAxiom(ont,asser12);  
+            }
+            //Add father's label to the comboBox
+            fComboBox.addItem(fath);
+        }
+        else
+        {
+            //If the father selected from the JComboBox
+            String fL =(String)fComboBox.getSelectedItem();
+            OWLIndividual father = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+fL));
+            //Split father name
+            String[] fArray= fL.split("_");
+            fFirst= fArray[0];
+            fLast= fArray[1];
+            
+            //Adding father relation
+            OWLAxiom assertion4 = df.getOWLObjectPropertyAssertionAxiom(hasFather, matt, father);
+            manager.addAxiom(ont, assertion4);
+            
+            if(maleButton.isSelected())
+            {
+              OWLAxiom assertion5 = df.getOWLObjectPropertyAssertionAxiom(hasSon, father, matt);
+              manager.addAxiom(ont, assertion5);}
+            else if(femaleButton.isSelected())
+            { OWLAxiom assertion6 = df.getOWLObjectPropertyAssertionAxiom(hasDaughter, father, matt);
+              manager.addAxiom(ont, assertion6);}
+            else
+            {
+              OWLAxiom assertion7 = df.getOWLObjectPropertyAssertionAxiom(hasChild, father, matt);
+              manager.addAxiom(ont, assertion7);  
+            }
+            
+            Widget widget =tree.findWidget(fL);
+                if (widget != null) {
+                   tree.connect(widget, w1); 
+                }
+            
+        }
+        //Adding individual's mother
+        String mFirst="", mLast="";
+        if(!motherName.getText().isEmpty() ){
+            if(!(model.contains(moth)))
+            {
+                model.addElement(moth);
+            //Creating String arrays for AutoComplete textfields
+            firstNames[count]= motherName.getText();
+            lastNames[count]= motherLast.getText();
+            birthYears[count]= motherBirth.getText();
+            if(!motherDeath.getText().isEmpty())
+            {
+              deathYears[count]= motherDeath.getText();
+              new AutoTextField(motherDeath, deathYears);  
+            }
+            count++;
+            new AutoTextField(motherName, firstNames);
+            new AutoTextField(motherLast, lastNames);
+            new AutoTextField(motherBirth, birthYears);
+            //Adding the mother to the tabel
+            if(!motherDeath.getText().isEmpty())
+              tmodel.addRow(new Object[]{motherName.getText()+" "+motherLast.getText(),motherBirth.getText(),motherDeath.getText()," ", " "});
+            else
+              tmodel.addRow(new Object[]{motherName.getText()+" "+motherLast.getText(),motherBirth.getText()," "," ", " "});
+            //Adding the mother to the family tree
+            w4=tree.addWidget(moth,p1-100, p2-100);
+            tree.connect(w4, w1);
+            }
+            else
+            {
+                Widget widget =tree.findWidget(moth);
+                if (widget != null) {
+                   tree.connect(widget, w1); 
+                }
+            }
+            
+            OWLIndividual mother = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+moth));
+            OWLClassAssertionAxiom classAssertion3 = df.getOWLClassAssertionAxiom(Woman, mother);
+            manager.addAxiom(ont, classAssertion3);
+
+            OWLAxiom assertion8 = df.getOWLObjectPropertyAssertionAxiom(hasMother, matt, mother);
+            manager.addAxiom(ont, assertion8);
+            
+            if(maleButton.isSelected())
+            { OWLAxiom assertion9 = df.getOWLObjectPropertyAssertionAxiom(hasSon, mother, matt);
+              manager.addAxiom(ont, assertion9);}
+            else if(femaleButton.isSelected())
+            { OWLAxiom assertion10 = df.getOWLObjectPropertyAssertionAxiom(hasDaughter, mother, matt);
+              manager.addAxiom(ont, assertion10);}
+            else
+            {
+              OWLAxiom assertion11 = df.getOWLObjectPropertyAssertionAxiom(hasChild, mother, matt);
+              manager.addAxiom(ont, assertion11);  
+            }
+            
+            OWLAxiom asser13= df.getOWLDataPropertyAssertionAxiom(hasFirstName, mother, motherName.getText());
+            manager.addAxiom(ont,asser13);
+            OWLAxiom asser14= df.getOWLDataPropertyAssertionAxiom(hasFamilyName, mother, motherLast.getText());
+            manager.addAxiom(ont,asser14);
+            OWLAxiom asser15= df.getOWLDataPropertyAssertionAxiom(hasBirthYear, mother, Integer.parseInt(motherBirth.getText()));
+            manager.addAxiom(ont,asser15);
+            if(!motherDeath.getText().isEmpty())
+            {
+              OWLAxiom asser16= df.getOWLDataPropertyAssertionAxiom(hasDeathYear, mother, Integer.parseInt(motherDeath.getText()));
+              manager.addAxiom(ont,asser16);
+            }
+            //Add mother's label to the comboBox
+            mComboBox.addItem(moth);
+        }
+        else
+        {
+             //If the mother selected from the JComboBox
+            String mL =(String)mComboBox.getSelectedItem();
+            OWLIndividual mother = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+mL));
+            //Split father name
+            String[] mArray= mL.split("_");
+            mFirst= mArray[0];
+            mLast= mArray[1];
+            
+            //Adding father relation
+            OWLAxiom assertion8 = df.getOWLObjectPropertyAssertionAxiom(hasMother, matt, mother);
+            manager.addAxiom(ont, assertion8);
+            
+            if(maleButton.isSelected())
+            { OWLAxiom assertion9 = df.getOWLObjectPropertyAssertionAxiom(hasSon, mother, matt);
+              manager.addAxiom(ont, assertion9);}
+            else if(femaleButton.isSelected())
+            { OWLAxiom assertion10 = df.getOWLObjectPropertyAssertionAxiom(hasDaughter, mother, matt);
+              manager.addAxiom(ont, assertion10);}
+            else
+            {
+              OWLAxiom assertion11 = df.getOWLObjectPropertyAssertionAxiom(hasChild, mother, matt);
+              manager.addAxiom(ont, assertion11);  
+            }
+            
+            Widget widget =tree.findWidget(mL);
+                if (widget != null) {
+                   tree.connect(widget, w1); 
+                }
+            
+        }
+        list1.setModel(model);
+        
+        //Adding individual information to the table
+        if(!fatherName.getText().isEmpty()&& !motherName.getText().isEmpty() )
+           tmodel.addRow(new Object[]{fName.getText()+" "+LName.getText(),birth.getText(),death.getText(),fatherName.getText()+" "+fatherLast.getText(), motherName.getText()+" "+motherLast.getText()});
+        else if(!motherName.getText().isEmpty())
+           tmodel.addRow(new Object[]{fName.getText()+" "+LName.getText(),birth.getText(),death.getText(),fFirst+" "+fLast, motherName.getText()+" "+motherLast.getText()});
+        else if(!fatherName.getText().isEmpty())
+           tmodel.addRow(new Object[]{fName.getText()+" "+LName.getText(),birth.getText(),death.getText(),fatherName.getText()+" "+fatherLast.getText(), mFirst+" "+mLast});     
+        else
+           tmodel.addRow(new Object[]{fName.getText()+" "+LName.getText(),birth.getText(),death.getText(),fFirst+" "+fLast, mFirst+" "+mLast});     
+        
+         fName.setText("");  LName.setText("");  birth.setText("");
+        fatherName.setText("");  fatherLast.setText("");  fatherBirth.setText(""); fatherDeath.setText("");
+        motherName.setText("");  motherLast.setText("");   motherBirth.setText(""); motherDeath.setText("");
+        spouseFirst.setText(""); spouseLast.setText("");  spouseBirth.setText("");  spouseDeath.setText(""); marriageYear.setText("");
+         buttonGroup1.clearSelection();  buttonGroup2.clearSelection();
+    }                                      
+
+    private void addMotherBActionPerformed(java.awt.event.ActionEvent evt) {                                           
+       OWLIndividual indMother=null;
+       String  first="", last="", bir="", dea="", motherLabel="";
+       int classType=2;
+       String childType="", type="";
+       String childLabel= (String)list1.getSelectedValue();
+       OWLIndividual indi = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+childLabel));
+       
+       Set<OWLClassExpression> y=indi.getTypes(ont);
+       for(OWLClassExpression j:y)
+           childType=j.getSignature().toString();
+      
+       if(!childType.isEmpty())
+       {String[] parts3= childType.split("#");
+       String part3=parts3[1];
+        type= part3.substring(0,part3.length()-2);}
+       
+       Set<OWLIndividual> mom= indi.getObjectPropertyValues(hasMother, ont);
+       for(OWLIndividual m:mom)
+           indMother=m;
+       
+       if(indMother != null)
+       {String dLabel = indMother.getSignature().toString();
+       System.out.println(indMother.getSignature().toString());
+       String[] parts2= dLabel.split("#");
+       String part2=parts2[1];
+       motherLabel= part2.substring(0,part2.length()-2);
+       
+       
+       Set<OWLLiteral> FN= indMother.getDataPropertyValues(hasFirstName, ont);
+       for(OWLLiteral f:FN)
+           first=f.getLiteral();
+       
+       Set<OWLLiteral> LN= indMother.getDataPropertyValues(hasFamilyName, ont);
+       for(OWLLiteral l:LN)
+           last=l.getLiteral();
+       
+       Set<OWLLiteral> BY= indMother.getDataPropertyValues(hasBirthYear, ont);
+       for(OWLLiteral b:BY)
+           bir=b.getLiteral();
+       
+       Set<OWLLiteral> DY= indMother.getDataPropertyValues(hasDeathYear, ont);
+       for(OWLLiteral d:DY)
+           dea=d.getLiteral();
+       }
+       EditParent editP= new EditParent();
+       editP.setVisible(true);
+       editP.setValues(ont,manager,childLabel,motherLabel,first,last,bir, dea,classType,type, model,tmodel,tree); 
+    }                                          
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {                                           
+       
+       String first="", last="", bir="", dea="", cls="", classType="";
+       OWLIndividual mama=null, dada=null;
+       String motherLabel="";  String fatherLabel="";
+       
+       String label2= (String)list1.getSelectedValue();
+       System.out.println("the label"+label2);
+       OWLIndividual ind = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+label2));
+       System.out.println("code1"+ind.getSignature().toString());
+       
+       
+       Set<OWLClassExpression> x=ind.getTypes(ont);
+       for(OWLClassExpression i:x)
+       {
+           cls=i.getSignature().toString();
+       }
+       if(!cls.isEmpty())
+       {String[] parts3= cls.split("#");
+       String part3=parts3[1];
+        classType= part3.substring(0,part3.length()-2);}
+       
+       
+       Set<OWLLiteral> FN= ind.getDataPropertyValues(hasFirstName, ont);
+       for(OWLLiteral f:FN)
+           first=f.getLiteral();
+       
+       Set<OWLLiteral> LN= ind.getDataPropertyValues(hasFamilyName, ont);
+       for(OWLLiteral l:LN)
+           last=l.getLiteral();
+       
+       Set<OWLLiteral> BY= ind.getDataPropertyValues(hasBirthYear, ont);
+       for(OWLLiteral b:BY)
+           bir=b.getLiteral();
+       
+       Set<OWLLiteral> DY= ind.getDataPropertyValues(hasDeathYear, ont);
+       for(OWLLiteral d:DY)
+           dea=d.getLiteral();
+     
+       Set<OWLIndividual> mom= ind.getObjectPropertyValues(hasMother, ont);
+       for(OWLIndividual m:mom)
+           mama=m;
+      
+       if(mama != null)
+       { String mLabel = mama.getSignature().toString();
+       String[] parts1= mLabel.split("#");
+       String part1=parts1[1];
+       motherLabel= part1.substring(0,part1.length()-2);
+       }
+       
+       Set<OWLIndividual> dad= ind.getObjectPropertyValues(hasFather, ont);
+       for(OWLIndividual d:dad)
+           dada=d;
+       if(dada != null)
+       {String dLabel = dada.getSignature().toString();
+       String[] parts2= dLabel.split("#");
+       String part2=parts2[1];
+       fatherLabel= part2.substring(0,part2.length()-2);
+       }
+       
+       EditIndividual editFrame= new EditIndividual();
+       editFrame.setVisible(true);
+       editFrame.setValues(ont,manager,label2,first,last,bir, dea,motherLabel,fatherLabel,classType, model,tmodel,tree); 
+     
+    }                                          
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
+        String deleteLabel= (String)list1.getSelectedValue();
+        model.removeElement(deleteLabel);
+        OWLNamedIndividual deleteInd = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+deleteLabel));
+        OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ont));
+        deleteInd.accept(remover);
+        manager.applyChanges(remover.getChanges());
+        remover.reset();
+        
+        //remove the individual from the table
+         String[] parts= deleteLabel.split("_");
+        String p1 =parts[0];
+        String p2 =parts[1];
+        String name=p1+" "+p2;
+        for(int i = 0; i < tmodel.getRowCount(); i++){
+             if(tmodel.getValueAt(i, 3).equals(name))
+                 tmodel.setValueAt("", i,3);
+             if(tmodel.getValueAt(i, 4).equals(name))
+                 tmodel.setValueAt("", i,4);
+             if(tmodel.getValueAt(i, 0).equals(name))
+                 tmodel.removeRow(i);
+              }
+        
+        //remove the individual from the family tree
+        IconNodeWidget widget =(IconNodeWidget)tree.findWidget(deleteLabel);
+           if (widget != null) {
+               tree.removingNode(deleteLabel);
+               tree.removeNode(deleteLabel);
+           }
+        
+    }                                            
+
+    private void executeActionPerformed(java.awt.event.ActionEvent evt) {                                        
+        jTextArea1.setText("");
+       if(reasonerID==0)
+         JOptionPane.showMessageDialog(new JFrame(), "Run the reasoner", "Dialog",
+        JOptionPane.INFORMATION_MESSAGE); 
+       else{
+        //General queries
+         if(personQ.isSelected() && !parentsOfQ.isSelected())
+       {
+           NodeSet<OWLNamedIndividual> inds1=reasoner.getInstances(Person, false);
+           for (Node<OWLNamedIndividual> m : inds1) {
+            for (OWLNamedIndividual j : m.getEntities()) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }} 
+       }   
+       
+       if(manQ.isSelected())
+       {
+          NodeSet<OWLNamedIndividual> inds2=reasoner.getInstances(Man, false);
+           for (Node<OWLNamedIndividual> m : inds2) {
+            for (OWLNamedIndividual j : m.getEntities()) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }}  
+       }
+       
+       if(womanQ.isSelected())
+       {
+           NodeSet<OWLNamedIndividual> inds2=reasoner.getInstances(Woman, false);
+           for (Node<OWLNamedIndividual> m : inds2) {
+            for (OWLNamedIndividual j : m.getEntities()) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }}    
+       }
+       
+      //Query for specific individual  
+        
+        String indQ= jTextField2.getText();
+       if(model.contains(indQ))
+       {
+           
+       OWLNamedIndividual indQuery = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+indQ));
+    
+       
+       if(fatherOfQ.isSelected() && !personQ.isSelected())
+      {
+          NodeSet<OWLNamedIndividual> dad=reasoner.getObjectPropertyValues(indQuery, hasFather);
+         
+          Set<OWLNamedIndividual> values = dad.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }
+      }
+       
+       
+       if(motherOfQ.isSelected() && !personQ.isSelected())
+      {
+          NodeSet<OWLNamedIndividual> mom=reasoner.getObjectPropertyValues(indQuery, hasMother);
+         
+          Set<OWLNamedIndividual> values = mom.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }
+      }
+       
+      if(parentsOfQ.isSelected() && !personQ.isSelected())
+       {
+           NodeSet<OWLNamedIndividual> parent=reasoner.getObjectPropertyValues(indQuery, hasParent);
+         
+          Set<OWLNamedIndividual> values = parent.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }
+       }    
+         
+      if(childQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> children =reasoner.getObjectPropertyValues(indQuery, hasChild);
+         
+          Set<OWLNamedIndividual> values = children.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+      }
+      
+      
+      if(ancestorsQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> ancestor =reasoner.getObjectPropertyValues(indQuery, hasAncestor);
+         
+          Set<OWLNamedIndividual> values = ancestor.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+      }
+      
+      
+     
+      if(wifeQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> wife =reasoner.getObjectPropertyValues(indQuery, hasWife);
+         
+          Set<OWLNamedIndividual> values = wife.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+      }
+      
+      if(husbandQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> husband =reasoner.getObjectPropertyValues(indQuery, hasHusband);
+         
+          Set<OWLNamedIndividual> values = husband.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+      }
+      
+      
+      if(spouseQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> spouse =reasoner.getObjectPropertyValues(indQuery, hasSpouse);
+         
+          Set<OWLNamedIndividual> values = spouse.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+      }
+      
+      if(brotherOfQ.isSelected() && !personQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> brother =reasoner.getObjectPropertyValues(indQuery, hasBrother);
+         
+          Set<OWLNamedIndividual> values = brother.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(!(j.getIRI().getFragment().equals(indQuery.getIRI().getFragment())))
+                {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }
+            }
+      }
+      
+      if(GrandparentQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> grandparent =reasoner.getObjectPropertyValues(indQuery, hasGrandParent);
+         
+          Set<OWLNamedIndividual> values = grandparent.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }    
+      }
+      
+      if(grandmotherQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> grandmother =reasoner.getObjectPropertyValues(indQuery, hasGrandmother);
+         
+          Set<OWLNamedIndividual> values = grandmother.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }    
+      }
+      
+      if(grandfatherQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> grandfather =reasoner.getObjectPropertyValues(indQuery, hasGrandfather);
+         
+          Set<OWLNamedIndividual> values = grandfather.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }    
+      }
+      
+      if(descendantsQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> descendant =reasoner.getObjectPropertyValues(indQuery, isAncestorOf);
+         
+          Set<OWLNamedIndividual> values = descendant.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }    
+      }
+      
+      if(sonQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> son =reasoner.getObjectPropertyValues(indQuery, hasSon);
+         
+          Set<OWLNamedIndividual> values = son.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }    
+      }
+      
+      if(daughterQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> daughter =reasoner.getObjectPropertyValues(indQuery, hasDaughter);
+         
+          Set<OWLNamedIndividual> values = daughter.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }    
+      }
+      if(siblingQ.isSelected())
+      {
+        NodeSet<OWLNamedIndividual> sibling =reasoner.getObjectPropertyValues(indQuery, isSiblingOf);
+         
+          Set<OWLNamedIndividual> values = sibling.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(!(j.getIRI().getFragment().equals(indQuery.getIRI().getFragment())))
+                {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+                }
+            }  
+      }
+      
+      if(sisterOfQ.isSelected() && !personQ.isSelected())
+      {
+         NodeSet<OWLNamedIndividual> sister =reasoner.getObjectPropertyValues(indQuery, hasSister);
+         
+          Set<OWLNamedIndividual> values = sister.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(!(j.getIRI().getFragment().equals(indQuery.getIRI().getFragment())))
+                {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+                }
+            }
+      }
+      String mothLabel="";
+      if(auntQ.isSelected())
+      {
+          NodeSet<OWLNamedIndividual> mom=reasoner.getObjectPropertyValues(indQuery, hasMother);
+          Set<OWLNamedIndividual> v = mom.getFlattened();
+            for (OWLNamedIndividual m : v) 
+                  mothLabel=m.getIRI().getFragment();
+            
+          NodeSet<OWLNamedIndividual> aunt =reasoner.getObjectPropertyValues(indQuery, hasAunt);
+         
+          Set<OWLNamedIndividual> values = aunt.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(!(j.getIRI().getFragment().equals(mothLabel))){
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }      
+      }}
+      String fathLabel="";
+      if(uncleQ.isSelected())
+      {
+          NodeSet<OWLNamedIndividual> bob=reasoner.getObjectPropertyValues(indQuery, hasFather);
+          Set<OWLNamedIndividual> v = bob.getFlattened();
+            for (OWLNamedIndividual f : v) 
+                  fathLabel=f.getIRI().getFragment();
+            
+          NodeSet<OWLNamedIndividual> uncle =reasoner.getObjectPropertyValues(indQuery, hasUncle);
+         
+          Set<OWLNamedIndividual> values = uncle.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(!(j.getIRI().getFragment().equals(fathLabel))){
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } }    
+      }
+     
+      if(personQ.isSelected()&& brotherOfQ.isSelected()&& parentsOfQ.isSelected())
+      {
+       
+          if(personOrder==1 && hasBrotherOrder==2 && hasParentOrder==3 )
+        { 
+         NodeSet<OWLNamedIndividual> uncle =reasoner.getObjectPropertyValues(indQuery, hasUncle);
+         
+          Set<OWLNamedIndividual> values = uncle.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }   
+         }
+          
+        else if(personOrder==1 &&  hasParentOrder==2 && hasBrotherOrder==3 )
+        { 
+         NodeSet<OWLNamedIndividual> parent =reasoner.getObjectPropertyValues(indQuery, hasParent);
+          Set<OWLNamedIndividual> values = parent.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }   
+         }
+      }
+      
+      if(personQ.isSelected() && parentsOfQ.isSelected() && sisterOfQ.isSelected())
+      {
+          if(personOrder==1 &&  hasSisterOrder==2 && hasParentOrder==3)
+          {
+            NodeSet<OWLNamedIndividual> aunt =reasoner.getObjectPropertyValues(indQuery, hasAunt);
+         
+          Set<OWLNamedIndividual> values = aunt.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }        
+          }
+          
+          else if(personOrder==1 && hasParentOrder==2 && hasSisterOrder==3)
+          {
+            NodeSet<OWLNamedIndividual> parent =reasoner.getObjectPropertyValues(indQuery, hasParent);
+         
+          Set<OWLNamedIndividual> values = parent.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }        
+          }
+      }
+      
+      if(personQ.isSelected() && parentsOfQ.isSelected() && fatherOfQ.isSelected())
+      {
+          if(personOrder==1 && hasFatherOrder==2 && hasParentOrder==3)
+          {
+            NodeSet<OWLNamedIndividual> grandfather =reasoner.getObjectPropertyValues(indQuery, hasGrandfather);
+         
+          Set<OWLNamedIndividual> values = grandfather.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }   
+          }
+          
+         else if(personOrder==1 && hasParentOrder==2 && hasFatherOrder==3)
+          {
+            OWLIndividual indFather=null;   String fatherLabelq="";
+            Set<OWLIndividual> dad= indQuery.getObjectPropertyValues(hasFather, ont);
+            for(OWLIndividual d:dad)
+               indFather=d;
+       
+            if(indFather != null)
+            {String dLabel = indFather.getSignature().toString();
+             String[] parts= dLabel.split("#");
+             String part=parts[1];
+             fatherLabelq= part.substring(0,part.length()-2);
+             OWLNamedIndividual father = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+fatherLabelq));
+             NodeSet<OWLNamedIndividual> grandparent =reasoner.getObjectPropertyValues(father, hasParent);
+             Set<OWLNamedIndividual> values = grandparent.getFlattened();
+             for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+            }
+          }
+      }
+      
+     if(personQ.isSelected() && parentsOfQ.isSelected() && motherOfQ.isSelected())
+     {
+         if(personOrder==1 && hasMotherOrder==2 && hasParentOrder==3 )
+         {
+           NodeSet<OWLNamedIndividual> grandmother =reasoner.getObjectPropertyValues(indQuery, hasGrandmother);
+         
+          Set<OWLNamedIndividual> values = grandmother.getFlattened();
+            for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            }       
+         }
+         
+         if(personOrder==1 && hasParentOrder==2 && hasMotherOrder==3 )
+         {
+           OWLIndividual indMother=null;   String motherLabelq="";
+            Set<OWLIndividual> mom= indQuery.getObjectPropertyValues(hasMother, ont);
+            for(OWLIndividual m:mom)
+               indMother=m;
+       
+            if(indMother != null)
+            {String mLabel = indMother.getSignature().toString();
+             String[] parts= mLabel.split("#");
+             String part=parts[1];
+             motherLabelq= part.substring(0,part.length()-2);
+             OWLNamedIndividual mother = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+motherLabelq));
+             NodeSet<OWLNamedIndividual> grandparent =reasoner.getObjectPropertyValues(mother, hasParent);
+             Set<OWLNamedIndividual> values = grandparent.getFlattened();
+             for (OWLNamedIndividual j : values) {
+                if(jTextArea1.getText().equals(""))
+                  jTextArea1.setText(j.getIRI().getFragment());
+                else
+                  jTextArea1.setText(jTextArea1.getText()+ "\n"+j.getIRI().getFragment());
+            } 
+            } 
+         }
+     }
+      
+    }
+      else if(!model.contains(indQ) && !personQ.isSelected()&& !manQ.isSelected() && !womanQ.isSelected())
+        JOptionPane.showMessageDialog(new JFrame(), "The individual is not exist", "Dialog",JOptionPane.INFORMATION_MESSAGE);     
+       
+       
+      //clear the counter of the queries
+      queryCount=1;
+      //clear the radio buttons
+      personQ.setSelected(false); manQ.setSelected(false);  womanQ.setSelected(false);  ancestorsQ.setSelected(false);  
+      parentsOfQ.setSelected(false);  fatherOfQ.setSelected(false);  motherOfQ.setSelected(false);  GrandparentQ.setSelected(false);
+      grandmotherQ.setSelected(false);  grandfatherQ.setSelected(false);  descendantsQ.setSelected(false);  childQ.setSelected(false);  
+      sonQ.setSelected(false);  daughterQ.setSelected(false);  brotherOfQ.setSelected(false);  sisterOfQ.setSelected(false);
+      siblingQ.setSelected(false);  auntQ.setSelected(false);  uncleQ.setSelected(false);  spouseQ.setSelected(false);
+      wifeQ.setSelected(false);  husbandQ.setSelected(false); 
+      //clear the text field
+      jTextField2.setText("");}
+    }                                       
+
+    private void editMarriageActionPerformed(java.awt.event.ActionEvent evt) {                                             
+      
+       String label= (String)list2.getSelectedValue();
+       OWLIndividual ind2 = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+label));
+       OWLIndividual fPartner=null, mPartner=null;
+       String mYear="", mPartnerLabel="", fPartnerLabel="";
+       
+       
+       Set<OWLLiteral> MY= ind2.getDataPropertyValues(hasMarriageYear, ont);
+       for(OWLLiteral d:MY)
+           mYear=d.getLiteral();
+     
+       Set<OWLIndividual> female= ind2.getObjectPropertyValues(hasFemalePartner, ont);
+       for(OWLIndividual f:female)
+           fPartner=f;
+      
+       if(fPartner != null)
+       { String fLabel = fPartner.getSignature().toString();  
+       String[] parts1= fLabel.split("#");
+       String part1=parts1[1];
+       fPartnerLabel= part1.substring(0,part1.length()-2);
+       }
+       
+       Set<OWLIndividual> male= ind2.getObjectPropertyValues(hasMalePartner, ont);
+       for(OWLIndividual m:male)
+           mPartner=m;
+      
+       if(mPartner != null)
+       { String mLabel = mPartner.getSignature().toString();
+       String[] parts2= mLabel.split("#");
+       String part2=parts2[1];
+       mPartnerLabel= part2.substring(0,part2.length()-2);
+       }
+       
+       EditMarriage EMFrame= new EditMarriage();
+       EMFrame.setVisible(true);
+       EMFrame.setValues(ont,manager,mYear, mPartnerLabel, fPartnerLabel,label,marriageModel);
+       
+    }                                            
+
+    private void deleteMarriageActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        String deleteLabel= (String)list2.getSelectedValue();
+        marriageModel.removeElement(deleteLabel);
+        OWLNamedIndividual deleteInd = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+deleteLabel));
+        OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ont));
+        deleteInd.accept(remover);
+        manager.applyChanges(remover.getChanges());
+        remover.reset();
+        
+    }                                              
+
+    private void pelletActionPerformed(java.awt.event.ActionEvent evt) {                                       
+   
+        PelletReasonerFactory reasonerFactory= new PelletReasonerFactory();    
+        reasoner =reasonerFactory.createReasoner(ont);
+        System.out.println(reasoner.isConsistent());
+        reasonerID=1;
+        Numbers();
+        
+    }                                      
+
+    private void BaddFatherActionPerformed(java.awt.event.ActionEvent evt) {                                           
+       OWLIndividual indFather=null;
+       String  first="", last="", bir="", dea="", fatherLabel="";
+       int classType=1;
+       String childType="", type="";
+       String childLabel= (String)list1.getSelectedValue();
+       OWLIndividual indi = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+childLabel));
+       
+       Set<OWLClassExpression> y=indi.getTypes(ont);
+       for(OWLClassExpression j:y)
+           childType=j.getSignature().toString();
+       
+      
+       if(!childType.isEmpty())
+       {String[] parts3= childType.split("#");
+       String part3=parts3[1];
+        type= part3.substring(0,part3.length()-2);}
+       
+       Set<OWLIndividual> dad= indi.getObjectPropertyValues(hasFather, ont);
+       for(OWLIndividual d:dad)
+           indFather=d;
+       
+       if(indFather != null)
+       {String dLabel = indFather.getSignature().toString();
+       System.out.println(indFather.getSignature().toString());
+       String[] parts2= dLabel.split("#");
+       String part2=parts2[1];
+       fatherLabel= part2.substring(0,part2.length()-2);
+       
+       
+       Set<OWLLiteral> FN= indFather.getDataPropertyValues(hasFirstName, ont);
+       for(OWLLiteral f:FN)
+           first=f.getLiteral();
+       
+       Set<OWLLiteral> LN= indFather.getDataPropertyValues(hasFamilyName, ont);
+       for(OWLLiteral l:LN)
+           last=l.getLiteral();
+       
+       Set<OWLLiteral> BY= indFather.getDataPropertyValues(hasBirthYear, ont);
+       for(OWLLiteral b:BY)
+           bir=b.getLiteral();
+       
+       Set<OWLLiteral> DY= indFather.getDataPropertyValues(hasDeathYear, ont);
+       for(OWLLiteral d:DY)
+           dea=d.getLiteral();
+       }
+       EditParent editP= new EditParent();
+       editP.setVisible(true);
+       editP.setValues( ont,manager, childLabel,fatherLabel,first,last,bir, dea,classType,type, model,tmodel,tree); 
+        
+    }                                          
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        reasoner.flush();
+    }                                          
+
+    private void fNewActionPerformed(java.awt.event.ActionEvent evt) {                                     
+     model.removeAllElements();
+       
+        try{
+             manager = OWLManager.createOWLOntologyManager();
+            File file1 = new File("C://Users/najla/Desktop/MSc project/OWL API/fhkb-mostclasses-noabox.owl");
+            ont = manager.loadOntologyFromOntologyDocument(file1);
+            
+        }catch(OWLOntologyCreationException e )
+        {
+        System.err.println("OWLOntologyCreationException: " + e.getMessage()); 
+        }
+        
+        tree= new FamilyTree();
+       
+            
+    }                                    
+
+    private void fSaveActionPerformed(java.awt.event.ActionEvent evt) {                                      
+      try {
+
+            manager.saveOntology(ont);
+        } catch (OWLOntologyStorageException ex) {
+            Logger.getLogger(LoadOntology.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }                                     
+
+    private void fExitActionPerformed(java.awt.event.ActionEvent evt) {                                      
+       System.exit(0); 
+    }                                     
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {                                     
+        try{
+            
+            int row= jTable1.getSelectedRow();
+            int column= jTable1.getSelectedColumn();
+            //String index = (String)jTable1.getModel().getValueAt(row,column);
+            String click= jTable1.getModel().getValueAt(row, column).toString();
+            
+            int constantColumn=0;
+            //search for the clicked text in the table
+            for(int i = 0; i < jTable1.getRowCount(); i++){
+                if(jTable1.getModel().getValueAt(i, constantColumn).equals(click)){
+                   jTable1.changeSelection(i, constantColumn , false, false);
+                 }
+              }
+        }catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }                                    
+
+    private void personQMouseClicked(java.awt.event.MouseEvent evt) {                                     
+        personOrder=queryCount;
+        queryCount++;
+        System.out.println("person order is: "+personOrder);
+    }                                    
+
+    private void parentsOfQMouseClicked(java.awt.event.MouseEvent evt) {                                        
+        hasParentOrder= queryCount;
+        queryCount++;
+        System.out.println("hasParent order is: "+hasParentOrder);
+    }                                       
+
+    private void brotherOfQMouseClicked(java.awt.event.MouseEvent evt) {                                        
+        hasBrotherOrder= queryCount;
+        queryCount++;
+        System.out.println("hasBrother order is: "+hasBrotherOrder);
+    }                                       
+
+    private void sisterOfQMouseClicked(java.awt.event.MouseEvent evt) {                                       
+        hasSisterOrder= queryCount;
+        queryCount++;
+        System.out.println("hasSister order is: "+hasSisterOrder);
+    }                                      
+
+    private void fatherOfQMouseClicked(java.awt.event.MouseEvent evt) {                                       
+        hasFatherOrder= queryCount;
+        queryCount++;
+        System.out.println("hasFather order is: "+hasFatherOrder);
+    }                                      
+
+    private void motherOfQMouseClicked(java.awt.event.MouseEvent evt) {                                       
+        hasMotherOrder= queryCount;
+        queryCount++;
+        System.out.println("hasMother order is: "+hasMotherOrder);
+    }                                      
+
+    private void searchTFKeyReleased(java.awt.event.KeyEvent evt) {                                     
+        String text= searchTF.getText();
+        for(int i=0; i< model.getSize(); i++)
+        {
+            String ele=model.getElementAt(i).toString();
+            if(ele.contains(text))
+              list1.setSelectedIndex(i);
+            
+        }
+    }                                    
+
+    private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+       if(factPlus.isSelected())
+       {
+        JFactFactory factory = new JFactFactory();
+       reasoner = factory.createReasoner(ont);
+       Numbers(); 
+       }
+       if(hermit.isSelected())
+       { 
+         ReasonerFactory rf = new ReasonerFactory();
+         reasoner=rf.createReasoner(ont);
+         Numbers(); 
+       }
+       if(pellet.isSelected())
+       {
+          PelletReasonerFactory reasonerFactory= new PelletReasonerFactory();    
+          reasoner =reasonerFactory.createReasoner(ont);
+          System.out.println(reasoner.isConsistent());
+          Numbers();  
+       }
+       reasonerID=1;
+    }                                           
+
+    private void jMenuItem15ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        jTabbedPane1.setSelectedComponent(jPanel6); 
+    }                                           
+
+    private void jMenuItem13ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        jTabbedPane1.setSelectedComponent(jPanel12); 
+    }                                           
+
+    private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        jTabbedPane1.setSelectedComponent(treePanel); 
+    }                                           
+
+    private void searchTFKeyTyped(java.awt.event.KeyEvent evt) {                                  
+        // TODO add your handling code here:
+    }                                 
+
+    private void fSaveAsActionPerformed(java.awt.event.ActionEvent evt) {                                        
+        JFrame frame = new JFrame("Save as");
+        JPanel panel = new JPanel();
+        JLabel label = new JLabel("File name:");
+        JTextField txt= new JTextField("", 10);;
+        //txt.setText(" ");
+        //txt.setSize(new Dimension(6,20)); 
+        JButton button = new JButton();
+        button.setText("Save");
+        button.setLocation(250, 70);
+        button.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+           File file = new File("C://Users/najla/Desktop/MSc project/OWL API/"+txt.getText()+".owl");
+       try {
+           manager.saveOntology(ont, IRI.create(file.toURI()));
+       } catch (OWLOntologyStorageException ex) {
+           Exceptions.printStackTrace(ex);
+       } 
+           frame.dispose();
+         }
+      });
+        panel.add(label);
+        panel.add(txt);
+        panel.add(button);
+        frame.add(panel);
+        frame.setSize(300, 100);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setVisible(true);
+
+    }                                       
+    
+    public void setModifiedMarriageValues(OWLOntology o,OWLOntologyManager sentManager,String mLabel, String fLabel, String my,String preMLabel ,DefaultListModel mm, String preMale, String preFemale,String preYear)
+    {
+        ont= o;  manager=sentManager;
+        
+        String[] parts1= mLabel.split("_");
+        String part1 =parts1[0];
+        
+        String[] parts2= fLabel.split("_");
+        String part2= parts2[0];
+        
+        String newMarriageLabel= "MarriageOf_"+part1+"_and_"+part2;
+        marriageModel=mm;
+      
+        //delete previous label from the list
+        list2.setModel(marriageModel);
+        marriageModel.removeElement(preMLabel);
+        
+        //Removing the previouse data properties values
+         OWLNamedIndividual preind = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+preMLabel));
+         OWLNamedIndividual preM = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+preMale));
+         OWLNamedIndividual preF = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+preFemale));
+         List<OWLOntologyChange> changes2 = new ArrayList<OWLOntologyChange>();
+     
+         OWLAxiom oldAxiom1 = df.getOWLObjectPropertyAssertionAxiom(hasMalePartner, preind,preM );
+         OWLAxiom oldAxiom2 = df.getOWLObjectPropertyAssertionAxiom(hasFemalePartner, preind,preF );
+         OWLAxiom oldAxiom3 = df.getOWLDataPropertyAssertionAxiom(hasMarriageYear, preind, Integer.parseInt(preYear));
+        
+         changes2.add(new RemoveAxiom(ont, oldAxiom1));
+         changes2.add(new RemoveAxiom(ont, oldAxiom2));
+         changes2.add(new RemoveAxiom(ont, oldAxiom3));
+         manager.applyChanges(changes2);
+         
+         //Rename the the parent
+         IRI newIRI=IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+newMarriageLabel);
+         
+         IRI oldIRI=preind.getIRI();
+        
+         OWLEntityRenamer renamer = new OWLEntityRenamer(ont.getOWLOntologyManager(),Collections.singleton(ont));
+         List<OWLOntologyChange> changes= renamer.changeIRI(oldIRI,newIRI);
+         manager.applyChanges(changes);
+     
+     //Adding the new marriage data
+    
+       OWLIndividual marriageInd= df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+newMarriageLabel));
+       OWLClassAssertionAxiom ca6 = df.getOWLClassAssertionAxiom(Marriage, marriageInd);
+       manager.addAxiom(ont, ca6);
+       OWLIndividual malePartner= df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+mLabel));
+       OWLIndividual femalePartner= df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+fLabel));
+       
+       OWLAxiom assertion1 = df.getOWLObjectPropertyAssertionAxiom(hasMalePartner, marriageInd, malePartner);
+       manager.addAxiom(ont, assertion1);
+       OWLAxiom assertion2 = df.getOWLObjectPropertyAssertionAxiom(hasFemalePartner, marriageInd, femalePartner);
+       manager.addAxiom(ont, assertion2);
+       OWLAxiom assertion3 = df.getOWLDataPropertyAssertionAxiom(hasMarriageYear, marriageInd, Integer.parseInt(my));
+        manager.addAxiom(ont, assertion3);
+       
+       marriageModel.addElement(newMarriageLabel);
+       list2.setModel(marriageModel); 
+       
+      
+    }
+    /**
+     * @param args the command line arguments
+     */
+    
+    public void setParentValues(OWLOntology o,OWLOntologyManager sentManager,String childLabel,String plabel, String pfirst, String plast, String pbirth, String pdeath,DefaultListModel m , int cls, String chiType, DefaultTableModel tm, String oldFirst, String oldLast, String oldBirth, String oldDeath, FamilyTree t)
+    {
+       
+       ont= o;  manager=sentManager;
+       String newLabel=pfirst+"_"+plast+"_"+pbirth;
+       model=m;
+       tmodel= tm;
+       tree=t;
+       
+       
+     String parentFather="", parentMother=""; 
+     System.out.println("father label is:"+plabel);
+     //Rename the previous label
+     if(!plabel.isEmpty())
+     {
+         //Removing the previouse data properties values
+         OWLNamedIndividual preind = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+plabel));
+         List<OWLOntologyChange> changes2 = new ArrayList<OWLOntologyChange>();
+     
+         OWLAxiom oldAxiom1 = df.getOWLDataPropertyAssertionAxiom(hasFirstName, preind, oldFirst);
+         OWLAxiom oldAxiom2 = df.getOWLDataPropertyAssertionAxiom(hasFamilyName, preind, oldLast);
+         OWLAxiom oldAxiom3 = df.getOWLDataPropertyAssertionAxiom(hasBirthYear, preind, Integer.parseInt(oldBirth));
+         if(!oldDeath.isEmpty())
+         {
+         OWLAxiom oldAxiom4 = df.getOWLDataPropertyAssertionAxiom(hasDeathYear, preind, Integer.parseInt(oldDeath));
+         changes2.add(new RemoveAxiom(ont, oldAxiom4));
+         }
+        
+         changes2.add(new RemoveAxiom(ont, oldAxiom1));
+         changes2.add(new RemoveAxiom(ont, oldAxiom2));
+         changes2.add(new RemoveAxiom(ont, oldAxiom3));
+         
+         manager.applyChanges(changes2);
+         
+         //Rename the the parent
+         IRI newIRI=IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+newLabel);
+         
+         IRI oldIRI=preind.getIRI();
+        
+         OWLEntityRenamer renamer = new OWLEntityRenamer(ont.getOWLOntologyManager(),Collections.singleton(ont));
+         List<OWLOntologyChange> changes= renamer.changeIRI(oldIRI,newIRI);
+         manager.applyChanges(changes);
+        
+         
+         //remove the previouse label from the list
+         list1.setModel(model);
+         model.removeElement(plabel);
+     
+         //delete the previous lable from the table
+         String [] parts= plabel.split("_");
+         String preFirstName= parts[0];
+         String preLastName= parts[1];
+         int constantColumn=0;
+         //search for the individual in the table and delete it
+          for(int i = 0; i < tmodel.getRowCount(); i++){
+             if(tmodel.getValueAt(i, constantColumn).equals(preFirstName+" "+preLastName)){
+                 parentFather=tmodel.getValueAt(i, 3).toString(); 
+                 parentMother=tmodel.getValueAt(i, 4).toString();   
+                 tmodel.removeRow(i);
+                 }
+              }
+          
+           //Update other children row 
+      for(int w=0; w< tmodel.getRowCount(); w++)
+        for(int c=0; c< tmodel.getColumnCount(); c++)
+            if(tmodel.getValueAt(w, c).equals(preFirstName+" "+preLastName))
+                 tmodel.setValueAt(pfirst+" "+plast, w, c);
+     } 
+      //Adding the new label
+      OWLIndividual ind = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+newLabel));
+      System.out.println(ind.getSignature().toString());
+      OWLClassAssertionAxiom classAssertion20;
+      
+          if(cls == 1)
+          {classAssertion20 = df.getOWLClassAssertionAxiom(Man, ind);
+           fComboBox.addItem(newLabel);
+          }
+          else if(cls==2)
+          {classAssertion20= df.getOWLClassAssertionAxiom(Woman, ind);
+           mComboBox.addItem(newLabel);
+          }
+          else
+            classAssertion20= df.getOWLClassAssertionAxiom(Person, ind);
+        
+         
+      manager.addAxiom(ont, classAssertion20);
+      if(!(model.contains(newLabel)))
+          model.addElement(newLabel);
+      list1.setModel(model);
+      
+      //Adding or update parent label in the family tree
+      Widget fatherWidget =tree.findWidget(newLabel);
+       if(!plabel.isEmpty())
+       {
+           Widget widget =tree.findWidget(plabel);
+           if (widget != null) {
+               tree.setText((IconNodeWidget)widget, newLabel);
+           }
+       }
+       else if(plabel.isEmpty() && fatherWidget!= null)
+       {
+          Point point1=new Point(10,10);
+            int x1=0, y1=0;
+            Widget widget =tree.findWidget(childLabel);
+                if (widget != null) {
+                  point1= widget.getPreferredLocation();
+                  x1=point1.x;
+                  y1=point1.y;
+                }
+            tree.connect(fatherWidget,widget); 
+       }
+       else{
+            Point point=new Point(10,10);
+            int x2=0, y2=0;
+            Widget widget =tree.findWidget(childLabel);
+                if (widget != null) {
+                  point= widget.getPreferredLocation();
+                  x2=point.x;
+                  y2=point.y;
+                }
+            Widget parentWidget=tree.addWidget(newLabel,x2+100,y2-100);
+            tree.connect(parentWidget,widget);
+       }  
+       scrollPane.setViewportView(tree.createView());
+      
+       //Adding new data property
+       OWLAxiom asser21= df.getOWLDataPropertyAssertionAxiom(hasFirstName, ind, pfirst);
+          manager.addAxiom(ont,asser21);
+          
+          OWLAxiom asser22= df.getOWLDataPropertyAssertionAxiom(hasFamilyName, ind, plast);
+          manager.addAxiom(ont,asser22);
+          
+          OWLAxiom asser23= df.getOWLDataPropertyAssertionAxiom(hasBirthYear, ind, Integer.parseInt(pbirth));
+          manager.addAxiom(ont,asser23);
+          if(!pdeath.isEmpty())
+            {
+              OWLAxiom asser24= df.getOWLDataPropertyAssertionAxiom(hasDeathYear, ind, Integer.parseInt(pdeath));
+              manager.addAxiom(ont,asser24);  
+            }
+          
+      //Update the table for parent row if it dose not exit
+         boolean condition=true;
+         String [] partsnew= newLabel.split("_");
+         String newFirst= partsnew[0];
+         String newLast= partsnew[1];
+         for(int row=0; row<tmodel.getRowCount(); row++)
+         {  if(tmodel.getValueAt(row, 0).equals(newFirst+" "+newLast))
+                  condition=false;}
+       if(condition)
+         tmodel.addRow(new Object[]{pfirst+" "+plast , pbirth , pdeath ,parentFather, parentMother});
+       
+     
+      
+     int row=-1;
+     int constantColumn=0;
+     String[] childParts= childLabel.split("_");
+     String childFirst= childParts[0];
+     String childLast= childParts[1];
+     //search for the individual in the table and to update parent's name
+     for(int i = 0; i < tmodel.getRowCount(); i++){
+         if(tmodel.getValueAt(i, constantColumn).equals(childFirst+" "+childLast)){  
+             row=i;
+                 }
+              }
+       if(cls == 1)
+         tmodel.setValueAt(pfirst+" "+plast, row, 3);
+       else
+         tmodel.setValueAt(pfirst+" "+plast, row, 4);
+      
+    
+       //Adding father or mother relation
+       OWLIndividual child= df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+childLabel));
+       if(cls == 1)
+       { 
+          OWLAxiom assertion88 = df.getOWLObjectPropertyAssertionAxiom(hasFather, child, ind);
+          manager.addAxiom(ont, assertion88);}
+       else if(cls==2)
+       {
+           OWLAxiom assertion88 = df.getOWLObjectPropertyAssertionAxiom(hasMother, child, ind);
+          manager.addAxiom(ont, assertion88);
+       }
+          
+          //Adding son or daughter relation
+           if(chiType.equals("Man"))
+            {
+              OWLAxiom assertion28 = df.getOWLObjectPropertyAssertionAxiom(hasSon, ind,child);
+              manager.addAxiom(ont, assertion28);}
+            else if(chiType.equals("Woman"))
+            { OWLAxiom assertion29 = df.getOWLObjectPropertyAssertionAxiom(hasDaughter, ind, child);
+              manager.addAxiom(ont, assertion29);}
+            else
+            {
+              OWLAxiom assertion30 = df.getOWLObjectPropertyAssertionAxiom(hasChild, ind, child);
+              manager.addAxiom(ont, assertion30);  
+            }
+           
+    }
+    
+    public void setModifyValues(OWLOntology o,OWLOntologyManager senManager, String preIndLabel,String moFirst,String moLast, String moBirth, String moDeath,DefaultListModel m , int cls,DefaultTableModel tableModel, String oldFirst, String oldLast, String oldBirth, String oldDeath, FamilyTree t)
+    {
+      scrollPane.setViewportView(tree.createView());
+      ont=o;
+      manager=senManager;   
+      String moLabel=moFirst+"_"+moLast+"_"+moBirth;
+      model=m;
+      tmodel=  tableModel;
+      tree=t;
+      //change the individual label in the family tree
+      Widget widget =tree.findWidget(preIndLabel);
+     if (widget != null) {
+        tree.setText((IconNodeWidget)widget, moLabel);
+     }
+      
+     list1.setModel(model);
+     model.removeElement(preIndLabel);
+    
+     //Rename the individual
+     IRI newIRI=IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+moLabel);
+     OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+preIndLabel));
+     IRI oldIRI=ind.getIRI();
+        
+     OWLEntityRenamer renamer = new OWLEntityRenamer(ont.getOWLOntologyManager(),Collections.singleton(ont));
+     List<OWLOntologyChange> changes= renamer.changeIRI(oldIRI,newIRI);
+     manager.applyChanges(changes);
+     
+     //Get refrence to new label of the individual
+      OWLNamedIndividual realInd = df.getOWLNamedIndividual(IRI.create("http://www.owl.cs.manchester.ac.uk/ontologies/fhkb.owl#"+moLabel)); 
+      OWLClassAssertionAxiom classAssertion21;
+   
+          if(cls==1)
+               classAssertion21 = df.getOWLClassAssertionAxiom(Man, realInd);
+          else if(cls==2)
+               classAssertion21= df.getOWLClassAssertionAxiom(Woman, realInd);
+          else
+            classAssertion21= df.getOWLClassAssertionAxiom(Person, realInd);
+        
+         
+      manager.addAxiom(ont, classAssertion21);
+      model.addElement(moLabel);
+      list1.setModel(model);
+      
+      List<OWLOntologyChange> changes2 = new ArrayList<OWLOntologyChange>();
+      //Removing the previouse data properties values
+      OWLAxiom oldAxiom1 = df.getOWLDataPropertyAssertionAxiom(hasFirstName, realInd, oldFirst);
+      OWLAxiom oldAxiom2 = df.getOWLDataPropertyAssertionAxiom(hasFamilyName, realInd, oldLast);
+      OWLAxiom oldAxiom3 = df.getOWLDataPropertyAssertionAxiom(hasBirthYear, realInd, Integer.parseInt(oldBirth));
+      if(!oldDeath.isEmpty())
+      {OWLAxiom oldAxiom4 = df.getOWLDataPropertyAssertionAxiom(hasDeathYear, realInd, Integer.parseInt(oldDeath));
+       changes2.add(new RemoveAxiom(ont, oldAxiom4));
+      }
+      
+      changes2.add(new RemoveAxiom(ont, oldAxiom1));
+      changes2.add(new RemoveAxiom(ont, oldAxiom2));
+      changes2.add(new RemoveAxiom(ont, oldAxiom3));
+      
+      manager.applyChanges(changes2);
+      
+     
+      //Adding new data property
+      OWLAxiom asser23= df.getOWLDataPropertyAssertionAxiom(hasFirstName, realInd, moFirst);
+          manager.addAxiom(ont,asser23);
+          OWLAxiom asser24= df.getOWLDataPropertyAssertionAxiom(hasFamilyName, realInd, moLast);
+          manager.addAxiom(ont,asser24);
+          OWLAxiom asser25= df.getOWLDataPropertyAssertionAxiom(hasBirthYear, realInd, Integer.parseInt(moBirth));
+          manager.addAxiom(ont,asser25);
+          if(!moDeath.isEmpty())
+            {
+              OWLAxiom asser26= df.getOWLDataPropertyAssertionAxiom(hasDeathYear, realInd, Integer.parseInt(moDeath));
+              manager.addAxiom(ont,asser26);  
+            }
+       
+      //Update the individual's information in the tabel
+      int constantColumn=0;  
+        for(int i = 0; i < tmodel.getRowCount(); i++){
+         if(tmodel.getValueAt(i, constantColumn).equals(oldFirst+" "+oldLast))
+         { 
+          tmodel.setValueAt(moFirst+" "+moLast, i, 0);
+          tmodel.setValueAt(moBirth, i, 1);
+          tmodel.setValueAt(moDeath, i, 2);
+         }}
+        
+        //Update the individual's information in the tabel in children row
+        for(int row = 0; row < tmodel.getRowCount(); row++)
+          for(int col=0; col< tmodel.getColumnCount(); col++)
+             if(tmodel.getValueAt(row, col).equals(oldFirst+" "+oldLast))
+                  tmodel.setValueAt(moFirst+" "+moLast, row, col);
+            
+    }
+    
+    public void Numbers()
+    {
+        int persons=0, men=0, women=0, fathers=0, mothers=0;
+        
+        //Counting the number of persons
+        NodeSet<OWLNamedIndividual> inds1=reasoner.getInstances(Person, false);
+           for (Node<OWLNamedIndividual> m : inds1) {
+            for (OWLNamedIndividual j : m.getEntities()) {
+                 
+                persons++; 
+                
+             }}
+        personLabel.setText(String.valueOf(persons));
+        
+        //Counting the number of men
+        NodeSet<OWLNamedIndividual> inds2=reasoner.getInstances(Man, true);
+           for (Node<OWLNamedIndividual> m2 : inds2) {
+            for (OWLNamedIndividual j2 : m2.getEntities()) {
+                men++;
+             }}
+        menLabel.setText(String.valueOf(men));
+        
+        //Counting the number of women
+        NodeSet<OWLNamedIndividual> inds3=reasoner.getInstances(Woman, true);
+           for (Node<OWLNamedIndividual> m3 : inds3) {
+            for (OWLNamedIndividual j3 : m3.getEntities()) {
+                women++;
+             }}
+        womenLabel.setText(String.valueOf(women)); 
+        
+        //Counting the number of hasFather relation
+        Set<OWLNamedIndividual> indSet= ont.getIndividualsInSignature();
+        
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual dad :s.getObjectPropertyValues(hasFather, ont))
+          if(dad!=null)
+              fathers++;
+        }
+        fatherLabel.setText(String.valueOf(fathers));
+        
+        //Counting the number of hasMother relation
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual mom :s.getObjectPropertyValues(hasMother, ont))
+          if(mom!=null)
+          { 
+              mothers++;
+          }
+        }
+        motherLabel.setText(String.valueOf(mothers));
+        
+        
+        //Counting the number of hasSon relation
+        int sons=0;
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual son :s.getObjectPropertyValues(hasSon, ont))
+          if(son!=null)
+          { 
+              sons++;
+          }
+        }
+        sonLabel.setText(String.valueOf(sons));
+        
+        //Counting the number of hasDaughter relation
+        int dau=0;
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual daughter :s.getObjectPropertyValues(hasDaughter, ont))
+          if(daughter!=null)
+          { 
+              dau++;
+          }
+        }
+        daughterLabel.setText(String.valueOf(dau));
+        
+        //Counting the number of hasGrandmother relation
+        int gm=0;
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual garandmother :s.getObjectPropertyValues(hasGrandmother, ont))
+          if(garandmother!=null)
+          { 
+              gm++;
+          }
+        }
+        gmLabel.setText(String.valueOf(gm));
+        
+        //Counting the number of hasGrandfather relation
+        int gf=0;
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual garandfather :s.getObjectPropertyValues(hasGrandfather, ont))
+          if(garandfather!=null)
+          { 
+              gf++;
+          }
+        }
+        gfLabel.setText(String.valueOf(gf));
+        
+        //Counting the number of hasUncle relation
+        int uncles=0;
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual unc :s.getObjectPropertyValues(hasUncle, ont))
+          if(unc!=null)
+          { 
+              uncles++;
+          }
+        }
+        uncleLabel.setText(String.valueOf(uncles));
+        
+        //Counting the number of hasAunt relation
+        int aunts=0;
+        for(OWLIndividual s: indSet)
+        {
+         for( OWLIndividual aunt:s.getObjectPropertyValues(hasAunt, ont))
+          if(aunt!=null)
+          { 
+              aunts++;
+          }
+        }
+        auntLabel.setText(String.valueOf(aunts));
+        
+        //Counting the number of marriage relations
+        int mr=0;
+        NodeSet<OWLNamedIndividual> inds8=reasoner.getInstances(Marriage, false);
+           for (Node<OWLNamedIndividual> m : inds8) {
+            for (OWLNamedIndividual j : m.getEntities()) {
+                { 
+                mr++;
+                
+                }
+             }}
+        marriageLabel.setText(String.valueOf(mr));        
+        
+    }
+    
+    
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(LoadOntology.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(LoadOntology.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(LoadOntology.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(LoadOntology.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new LoadOntology().setVisible(true);
+                
+            }
+        });
+        
+      
+    }
+    
+ 
+
+ 
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JButton Adding;
+    private javax.swing.JButton BaddFather;
+    private javax.swing.JRadioButton GrandparentQ;
+    private javax.swing.JTextField LName;
+    private javax.swing.JButton addMotherB;
+    private javax.swing.JRadioButton ancestorsQ;
+    private javax.swing.JLabel auntLabel;
+    private javax.swing.JRadioButton auntQ;
+    private javax.swing.JTextField birth;
+    private javax.swing.JRadioButton brotherOfQ;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.ButtonGroup buttonGroup3;
+    private javax.swing.JRadioButton childQ;
+    private javax.swing.JLabel daughterLabel;
+    private javax.swing.JRadioButton daughterQ;
+    private javax.swing.JTextField death;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JButton deleteMarriage;
+    private javax.swing.JRadioButton descendantsQ;
+    private javax.swing.JButton editButton;
+    private javax.swing.JButton editMarriage;
+    private javax.swing.JButton execute;
+    private javax.swing.JComboBox fComboBox;
+    private javax.swing.JMenuItem fExit;
+    private javax.swing.JTextField fName;
+    private javax.swing.JMenuItem fNew;
+    private javax.swing.JMenuItem fSave;
+    private javax.swing.JMenuItem fSaveAs;
+    private javax.swing.JRadioButtonMenuItem factPlus;
+    private javax.swing.JTextField fatherBirth;
+    private javax.swing.JTextField fatherDeath;
+    private javax.swing.JLabel fatherLabel;
+    private javax.swing.JTextField fatherLast;
+    private javax.swing.JTextField fatherName;
+    private javax.swing.JRadioButton fatherOfQ;
+    private javax.swing.JRadioButton femaleButton;
+    private javax.swing.JLabel gfLabel;
+    private javax.swing.JLabel gmLabel;
+    private javax.swing.JRadioButton grandfatherQ;
+    private javax.swing.JRadioButton grandmotherQ;
+    private javax.swing.JRadioButtonMenuItem hermit;
+    private javax.swing.JRadioButton husbandQ;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel33;
+    private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
+    private javax.swing.JLabel jLabel39;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel41;
+    private javax.swing.JLabel jLabel47;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem11;
+    private javax.swing.JMenuItem jMenuItem12;
+    private javax.swing.JMenuItem jMenuItem13;
+    private javax.swing.JMenuItem jMenuItem14;
+    private javax.swing.JMenuItem jMenuItem15;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField jTextField2;
+    private javax.swing.JList list1;
+    private javax.swing.JList list2;
+    private javax.swing.JComboBox mComboBox;
+    private javax.swing.JRadioButton maleButton;
+    private javax.swing.JRadioButton manQ;
+    private javax.swing.JLabel marriageLabel;
+    private javax.swing.JTextField marriageYear;
+    private javax.swing.JLabel menLabel;
+    private javax.swing.JTextField motherBirth;
+    private javax.swing.JTextField motherDeath;
+    private javax.swing.JLabel motherLabel;
+    private javax.swing.JTextField motherLast;
+    private javax.swing.JTextField motherName;
+    private javax.swing.JRadioButton motherOfQ;
+    private javax.swing.JRadioButton parentsOfQ;
+    private javax.swing.JRadioButtonMenuItem pellet;
+    private javax.swing.JLabel personLabel;
+    private javax.swing.JRadioButton personQ;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JTextField searchTF;
+    private javax.swing.JRadioButton siblingQ;
+    private javax.swing.JRadioButton sisterOfQ;
+    private javax.swing.JLabel sonLabel;
+    private javax.swing.JRadioButton sonQ;
+    private javax.swing.JTextField spouseBirth;
+    private javax.swing.JTextField spouseDeath;
+    private javax.swing.JRadioButton spouseF;
+    private javax.swing.JTextField spouseFirst;
+    private javax.swing.JTextField spouseLast;
+    private javax.swing.JRadioButton spouseM;
+    private javax.swing.JRadioButton spouseQ;
+    private javax.swing.JPanel treePanel;
+    private javax.swing.JLabel uncleLabel;
+    private javax.swing.JRadioButton uncleQ;
+    private javax.swing.JRadioButton wifeQ;
+    private javax.swing.JRadioButton womanQ;
+    private javax.swing.JLabel womenLabel;
+    // End of variables declaration                   
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+}
